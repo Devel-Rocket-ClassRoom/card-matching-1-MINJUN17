@@ -1,3 +1,4 @@
 using System;
 
-Console.WriteLine("Hello, Card Matching");
+GameManager gm = new GameManager();
+gm.Run();
