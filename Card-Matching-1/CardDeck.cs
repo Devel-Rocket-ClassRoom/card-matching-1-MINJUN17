@@ -4,15 +4,16 @@ using System.Text;
 
 public class CardDeck
 {
-    public int[] Card { get; set; } = new int[16];
+    public int[] Card { get; set; }
     private int CardNumber = 1;
     Random rand = new Random();
-    public void CreateDeck()
+    public void CreateDeck(int num)
     {
+        Card = new int[num];
         for(int i = 0; i < Card.Length; i++)
         {
             Card[i] = CardNumber++;
-            if(CardNumber > 8)
+            if(CardNumber > Card.Length/2)
             {
                 CardNumber = 1;
             }

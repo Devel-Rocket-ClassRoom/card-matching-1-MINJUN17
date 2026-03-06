@@ -6,7 +6,8 @@ using System.Threading;
 class GameManager
 {
     CardDeck deck = new CardDeck();
-    string[] board = new string[16];
+    private string[] board;
+    private int cardTotalNum;
     private int num1_1 = 0;
     private int num1_2 = 0;
     private int num2_1 = 0;
@@ -15,20 +16,16 @@ class GameManager
     private int machCount = 0;
     private int maxTry;
     private bool retry = true;
-    private enum Difficulty
-    {
-        Hard = 10,
-        Normal = 20,
-        Easy = 30
-    }
 
     public void Run()
     {
         while (retry)
         {
-            ChoiceMaxTry();
+            Reset();
+            ChoiceDifficulty();
+            board = new string[cardTotalNum];
             BoardSetting();
-            deck.CreateDeck();
+            deck.CreateDeck(cardTotalNum);
             deck.CardShuffle();
             while (true)
             {
@@ -53,7 +50,7 @@ class GameManager
                     }
                     break;
                 }
-                if (machCount == 8)
+                if (machCount == cardTotalNum / 2)
                 {
                     Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {tryCount}");
                     Console.Write("다시 하시겠습니까(y,n): ");
@@ -68,18 +65,21 @@ class GameManager
         }
         
     }
+   
     public void Reset()
     {
         tryCount = 0;
         machCount = 0;
     }
-    public void ChoiceMaxTry()
+    public void ChoiceDifficulty()
     {
+        maxTry = 40;
+        cardTotalNum = 32;
         while (true)
         {
-            Console.WriteLine("1. Hard: 10번 안에 찾으세요!");
+            Console.WriteLine("1. Hard: 30번 안에 찾으세요!");
             Console.WriteLine("2. Normal: 20번 안에 찾으세요!");
-            Console.WriteLine("3. Easy: 30번 안에 찾으세요!");
+            Console.WriteLine("3. Easy: 10번 안에 찾으세요!");
             Console.Write("난이도를 선택하세요: ");
             int num;
             bool input = int.TryParse(Console.ReadLine(), out num);
@@ -93,10 +93,11 @@ class GameManager
             }
             else
             {
-                Console.WriteLine($"\n난이도: {(Difficulty)(num*10)} 선택");
+                maxTry -= num * 10;
+                cardTotalNum -= (num) * 8;
+                Console.WriteLine($"{maxTry}번 안에 찾으세요!");
                 Thread.Sleep(2000);
                 Console.Clear();
-                maxTry = num * 10;
                 break;
             }
         }
@@ -121,7 +122,7 @@ class GameManager
     {
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/8");
+            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/{board.Length/2}");
             Console.Write("\n첫 번째 카드를 선택하세요 (행 열):");
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
@@ -152,7 +153,7 @@ class GameManager
     {
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/8");
+            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/{board.Length / 2}");
             Console.Write("\n두 번째 카드를 선택하세요 (행 열):");
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
@@ -194,7 +195,7 @@ class GameManager
     {
         Console.WriteLine("    1열2열3열4열");
         int k = 0;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < cardTotalNum / 4; i++)
         {
             Console.Write($"{i + 1}행");
             for (int j = 0; j < 4; j++)
@@ -210,7 +211,7 @@ class GameManager
         int openNumber = ((n1 - 1) * 4) + n2 - 1;
         int machOpenNum = 0;
         Console.WriteLine("    1열2열3열4열");
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < cardTotalNum / 4; i++)
         {
             Console.Write($"{i + 1}행");
             for (int j = 0; j < 4; j++)
@@ -235,7 +236,7 @@ class GameManager
         int openNumber2 = ((n3 - 1) * 4) + n4 - 1;
         int machOpenNum = 0;
         Console.WriteLine("    1열2열3열4열");
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < cardTotalNum / 4; i++)
         {
             Console.Write($"{i + 1}행");
             for (int j = 0; j < 4; j++)
