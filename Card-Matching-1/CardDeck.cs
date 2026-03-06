@@ -5,6 +5,7 @@ using System.Text;
 public class CardDeck
 {
     public int[] Card { get; set; }
+    public char[] EnglishSkin {  get; set; }
     private int CardNumber = 1;
     Random rand = new Random();
     public void CreateDeck(int num)
@@ -27,6 +28,15 @@ public class CardDeck
             int temp = Card[i];
             Card[i] = Card[randomIndex];
             Card[randomIndex] = temp;
+        }
+    }
+    public void CreatEnglishSkin(int num)
+    {
+        EnglishSkin = new char[num];
+        for (int i = 0; i < EnglishSkin.Length; i++)
+        {
+            int english = Card[i] + 65;
+            EnglishSkin[i] = (char)english;
         }
     }
 }
