@@ -13,12 +13,20 @@ class GameManager
     private int num2_2 = 0;
     private int tryCount = 0;
     private int machCount = 0;
+    private int maxTry;
     private bool retry = true;
+    private enum Difficulty
+    {
+        Hard = 10,
+        Normal = 20,
+        Easy = 30
+    }
 
     public void Run()
     {
         while (retry)
         {
+            ChoiceMaxTry();
             BoardSetting();
             deck.CreateDeck();
             deck.CardShuffle();
@@ -34,6 +42,17 @@ class GameManager
                 MachingBoardChange(num1_1, num1_2, num2_1, num2_2);
                 Thread.Sleep(2000);
                 Console.Clear();
+                if(tryCount >= maxTry)
+                {
+                    Console.WriteLine($"=== 시도 횟수 초과! ===\r\n총 시도 횟수: {tryCount}");
+                    Console.Write("다시 하시겠습니까(y,n): ");
+                    string input = Console.ReadLine();
+                    if (input == "n")
+                    {
+                        retry = false;
+                    }
+                    break;
+                }
                 if (machCount == 8)
                 {
                     Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {tryCount}");
@@ -48,6 +67,39 @@ class GameManager
             }
         }
         
+    }
+    public void Reset()
+    {
+        tryCount = 0;
+        machCount = 0;
+    }
+    public void ChoiceMaxTry()
+    {
+        while (true)
+        {
+            Console.WriteLine("1. Hard: 10번 안에 찾으세요!");
+            Console.WriteLine("2. Normal: 20번 안에 찾으세요!");
+            Console.WriteLine("3. Easy: 30번 안에 찾으세요!");
+            Console.Write("난이도를 선택하세요: ");
+            int num;
+            bool input = int.TryParse(Console.ReadLine(), out num);
+            if (!input)
+            {
+                Console.WriteLine("숫자를 입력해주세요!");
+            }
+            else if (num <= 0 || num > 3)
+            {
+                Console.WriteLine("올바른 숫자가 아닙니다!");
+            }
+            else
+            {
+                Console.WriteLine($"\n난이도: {(Difficulty)(num*10)} 선택");
+                Thread.Sleep(2000);
+                Console.Clear();
+                maxTry = num * 10;
+                break;
+            }
+        }
     }
     public void MachingBoardChange(int n1, int n2, int n3, int n4)
     {
@@ -69,7 +121,7 @@ class GameManager
     {
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {tryCount} | 찾은 쌍: {machCount}/8");
+            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/8");
             Console.Write("\n첫 번째 카드를 선택하세요 (행 열):");
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
@@ -100,7 +152,7 @@ class GameManager
     {
         while (true)
         {
-            Console.WriteLine("\n시도 횟수: 0 | 찾은 쌍: 0/8");
+            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/8");
             Console.Write("\n두 번째 카드를 선택하세요 (행 열):");
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
@@ -165,7 +217,7 @@ class GameManager
             {
                 if (openNumber == machOpenNum)
                 {
-                    Console.Write($"  {deck.Card[machOpenNum]}");
+                    Console.Write($"[{deck.Card[machOpenNum]}]");
                 }
                 else
                 {
@@ -190,7 +242,7 @@ class GameManager
             {
                 if (openNumber1 == machOpenNum || openNumber2 == machOpenNum)
                 {
-                    Console.Write($"  {deck.Card[machOpenNum]}");
+                    Console.Write($"[{deck.Card[machOpenNum]}]");
                 }
                 else
                 {
