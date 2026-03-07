@@ -6,7 +6,11 @@ using System.Threading;
 class GameManager
 {
     CardDeck deck = new CardDeck();
-    private string[] board;
+    Board board;
+    //private string[] board;
+    private bool IsMaching = false;
+    private int _firstNum;
+    private int _secondNum;
     private int cardTotalNum;
     private int difficultyNum;
     private int SkinNum = 0;
@@ -25,27 +29,40 @@ class GameManager
         while (retry)
         {
             Reset();
-            ChoiceSkin();
-            Console.Clear();
             ChoiceDifficulty();
-            board = new string[cardTotalNum];
+            Console.Clear(); 
+            //board = new string[cardTotalNum];
             deck.CreateDeck(cardTotalNum);
             deck.CardShuffle();
-            deck.CreatEnglishSkin(cardTotalNum);
-            BoardSetting();
+            //BoardSetting();
+            CardSkinType skin = ChoiceSkin();
+            Console.Clear();
+            board = new Board(cardTotalNum);
+            board.OpenAll(deck, skin);
             Preview(difficultyNum);
+            board.CloseBoard(cardTotalNum);
             Console.Clear();
             while (true)
             {
-                BoardShow();
+                //BoardShow();
+                board.ShowBoard();
                 cardNumber = 1;
                 SelectNumber();
                 Console.Clear();
-                OpenFirstNumber(num1_1, num1_2);
+                //OpenFirstNumber(num1_1, num1_2);
+                board.OpenCard(deck, _firstNum);
+                board.ShowBoard();
                 SelectNumber();
+                board.OpenCard(deck, _secondNum);
                 Console.Clear();
-                OpenSecondNumber(num1_1, num1_2, num2_1, num2_2);
+                //OpenSecondNumber(num1_1, num1_2, num2_1, num2_2);
                 MachingBoardChange(num1_1, num1_2, num2_1, num2_2);
+                if (!IsMaching)
+                {
+                    board.CloseCard(_firstNum);
+                    board.CloseCard(_secondNum);
+                }
+                IsMaching = false;
                 Thread.Sleep(2000);
                 Console.Clear();
                 if(tryCount >= maxTry)
@@ -74,49 +91,43 @@ class GameManager
         }
         
     }
-    public void ChoiceSkin()
+    public CardSkinType ChoiceSkin()
     {
         while (true)
         {
             Console.WriteLine("1. 기본 스킨");
             Console.WriteLine("2. 알파벳 스킨");
+            Console.WriteLine("3. 기호 스킨");
             Console.Write("스킨을 선택하세요: ");
             bool input = int.TryParse(Console.ReadLine(), out SkinNum);
             if (!input)
             {
                 Console.WriteLine("숫자를 입력해주세요!");
             }
-            else if (SkinNum <= 0 || SkinNum > 2)
+            else if (SkinNum <= 0 || SkinNum > 3)
             {
                 Console.WriteLine("올바른 숫자가 아닙니다!");
             }
             else
             {
-                break;
+                switch (SkinNum)
+                {
+                    case 2:
+                        deck.CreatEnglishSkin(cardTotalNum);
+                        return CardSkinType.English;
+                    case 3:
+                        deck.CreateSymbolSkin(cardTotalNum); 
+                        return CardSkinType.Symbol;
+                    default:
+                        return CardSkinType.Basic;
+                }
             }
         }
     }
     public void Preview(int num)
     {
-        Console.WriteLine("    1열2열3열4열");
-        int k = 0;
-        for (int i = 0; i < cardTotalNum / 4; i++)
-        {
-            Console.Write($"{i + 1}행");
-            for (int j = 0; j < 4; j++)
-            {
-                if(SkinNum == 1)
-                {
-                    Console.Write($"  {deck.Card[k]}");
-                }
-                else if(SkinNum == 2)
-                {
-                    Console.Write($"  {deck.EnglishSkin[k]}");
-                }
-                k++;
-            }
-            Console.WriteLine();
-        }
+        Console.WriteLine("미리보기 !!");
+        board.ShowBoard();
         if(num == 1)
         {
             Thread.Sleep(2000);
@@ -160,7 +171,6 @@ class GameManager
                 cardTotalNum -= (difficultyNum) * 8;
                 Console.WriteLine($"{maxTry}번 안에 찾으세요!");
                 Console.Clear();
-                Console.WriteLine("미리보기!");
                 break;
             }
         }
@@ -169,18 +179,10 @@ class GameManager
     {
         int num1 = ((n1 - 1) * 4) + n2 - 1;
         int num2 = ((n3 - 1) * 4) + n4 - 1;
-        if (deck.Card[num1] == deck.Card[num2])
+        board.ShowBoard();
+        if (deck.NumberSkin[num1] == deck.NumberSkin[num2])
         {
-            if(SkinNum == 1)
-            {
-                board[num1] = $"  {deck.Card[num1].ToString()}";
-                board[num2] = $"  {deck.Card[num2].ToString()}";
-            }
-            else if(SkinNum == 2)
-            {
-                board[num1] = $"  {deck.EnglishSkin[num1].ToString()}";
-                board[num2] = $"  {deck.EnglishSkin[num2].ToString()}";
-            }
+            IsMaching = true;
             machCount++;
             Console.WriteLine("\n짝을 찾았습니다!");
         }
@@ -197,7 +199,7 @@ class GameManager
         bool input2 = false;
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/{board.Length / 2}");
+            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/{board.Boards.Length / 2}");
             Console.Write($"\n{cardNumber} 번째 카드를 선택하세요 (행 열):");
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
@@ -212,11 +214,14 @@ class GameManager
                 input2 = int.TryParse(number[1], out num2_2);
                 if (num2_1 == num1_1 && num2_2 == num1_2)
                 {
+                    Console.Clear();
+                    board.ShowBoard();
                     Console.WriteLine("새로운 숫자를 골라주세요!");
                     continue;
                 }
+                tryCount++;
             }
-            int num = ((num1_1 - 1) * 4) + num1_2 - 1;
+            //int num = ((num1_1 - 1) * 4) + num1_2 - 1;
             if (!input1 || !input2)
             {
                 Console.WriteLine("숫자를 입력해주세요!");
@@ -224,104 +229,113 @@ class GameManager
             }
             else if (num1_1 > 8 || num1_2 > 8 || num1_1 <= 0 || num1_2 <= 0)
             {
-                Console.WriteLine("올바른 숫자가 아닙니다!");
+                Console.WriteLine("1올바른 숫자가 아닙니다!");
                 continue;
             }
-            else if (board[num] != " **")
-            {
-                Console.WriteLine("올바른 숫자가 아닙니다!");
-            }
+            //else if (board.Boards[num] != " **  ")
+            //{
+            //    Console.WriteLine("2올바른 숫자가 아닙니다!");
+            //}
             else
             {
-                tryCount++;
+                _firstNum = ((num1_1 - 1) * 4) + num1_2 - 1;
+                _secondNum = ((num2_1 - 1) * 4) + num2_2 - 1;
                 cardNumber++;
                 break;
             }
         }
     }
     
-    public void BoardSetting()
-    {
-        for(int i = 0; i < board.Length; i++)
-        {
-            board[i] = " **";
-        }
-    }
-    public void BoardShow()
-    {
-        Console.WriteLine("    1열2열3열4열");
-        int k = 0;
-        for (int i = 0; i < cardTotalNum / 4; i++)
-        {
-            Console.Write($"{i + 1}행");
-            for (int j = 0; j < 4; j++)
-            {
-                Console.Write(board[k]);
-                k++;
-            }
-            Console.WriteLine();
-        }
-    }
-    public void OpenFirstNumber(int n1, int n2)
-    {
-        int openNumber = ((n1 - 1) * 4) + n2 - 1;
-        int machOpenNum = 0;
-        Console.WriteLine("    1열2열3열4열");
-        for (int i = 0; i < cardTotalNum / 4; i++)
-        {
-            Console.Write($"{i + 1}행");
-            for (int j = 0; j < 4; j++)
-            {
-                if (openNumber == machOpenNum)
-                {
-                    if(SkinNum == 1)
-                    {
-                        Console.Write($"[{deck.Card[machOpenNum]}]");
-                    }
-                    else if(SkinNum == 2)
-                    {
-                        Console.Write($"[{deck.EnglishSkin[machOpenNum]}]");
-                    }
-                }
-                else
-                {
-                    Console.Write($"{board[machOpenNum]}");
-                }
-                machOpenNum++;
-            }
-            Console.WriteLine();
-        }
-    }
+    //public void BoardSetting()
+    //{
+    //    for(int i = 0; i < board.Boards.Length; i++)
+    //    {
+    //        board.Boards[i] = " **";
+    //    }
+    //}
+    //public void BoardShow()
+    //{
+    //    Console.WriteLine("    1열2열3열4열");
+    //    int k = 0;
+    //    for (int i = 0; i < cardTotalNum / 4; i++)
+    //    {
+    //        Console.Write($"{i + 1}행");
+    //        for (int j = 0; j < 4; j++)
+    //        {
+    //            Console.Write(board.Boards[k]);
+    //            k++;
+    //        }
+    //        Console.WriteLine();
+    //    }
+    //}
+    //public void OpenFirstNumber(int n1, int n2)
+    //{
+    //    int openNumber = ((n1 - 1) * 4) + n2 - 1;
+    //    int machOpenNum = 0;
+    //    Console.WriteLine("    1열2열3열4열");
+    //    for (int i = 0; i < cardTotalNum / 4; i++)
+    //    {
+    //        Console.Write($"{i + 1}행");
+    //        for (int j = 0; j < 4; j++)
+    //        {
+    //            if (openNumber == machOpenNum)
+    //            {
+    //                if(SkinNum == 1)
+    //                {
+    //                    Console.Write($"[{deck.NumberSkin[machOpenNum]}]");
+    //                }
+    //                else if(SkinNum == 2)
+    //                {
+    //                    Console.Write($"[{deck.EnglishSkin[machOpenNum]}]");
+    //                }
+    //                else if(SkinNum == 3)
+    //                {
+    //                    Console.Write($"[{deck.SymbolSkin[machOpenNum]}]");
+    //                }
+    //            }
+    //            else
+    //            {
+    //                Console.Write($"{board.Boards[machOpenNum]}");
+    //            }
+    //            machOpenNum++;
+    //        }
+    //        Console.WriteLine();
+    //    }
+    //}
    
-    public void OpenSecondNumber(int n1, int n2, int n3, int n4)
-    {
-        int openNumber1 = ((n1 - 1) * 4) + n2 - 1;
-        int openNumber2 = ((n3 - 1) * 4) + n4 - 1;
-        int machOpenNum = 0;
-        Console.WriteLine("    1열2열3열4열");
-        for (int i = 0; i < cardTotalNum / 4; i++)
-        {
-            Console.Write($"{i + 1}행");
-            for (int j = 0; j < 4; j++)
-            {
-                if (openNumber1 == machOpenNum || openNumber2 == machOpenNum)
-                {
-                    if (SkinNum == 1)
-                    {
-                        Console.Write($"[{deck.Card[machOpenNum]}]");
-                    }
-                    else if (SkinNum == 2)
-                    {
-                        Console.Write($"[{deck.EnglishSkin[machOpenNum]}]");
-                    }
-                }
-                else
-                {
-                    Console.Write($"{board[machOpenNum]}");
-                }
-                machOpenNum++;
-            }
-            Console.WriteLine();
-        }
-    }
+    //public void OpenSecondNumber(int n1, int n2, int n3, int n4)
+    //{
+    //    int openNumber1 = ((n1 - 1) * 4) + n2 - 1;
+    //    int openNumber2 = ((n3 - 1) * 4) + n4 - 1;
+    //    int machOpenNum = 0;
+    //    Console.WriteLine("    1열2열3열4열");
+    //    for (int i = 0; i < cardTotalNum / 4; i++)
+    //    {
+    //        Console.Write($"{i + 1}행");
+    //        for (int j = 0; j < 4; j++)
+    //        {
+    //            if (openNumber1 == machOpenNum || openNumber2 == machOpenNum)
+    //            {
+    //                if (SkinNum == 1)
+    //                {
+    //                    Console.Write($"[{deck.NumberSkin[machOpenNum]}]");
+    //                }
+    //                else if (SkinNum == 2)
+    //                {
+    //                    Console.Write($"[{deck.EnglishSkin[machOpenNum]}]");
+    //                }
+    //                else if (SkinNum == 3)
+    //                {
+    //                    Console.Write($"[{deck.SymbolSkin[machOpenNum]}]");
+    //                }
+    //            }
+    //            else
+    //            {
+    //                Console.Write($"{board.Boards[machOpenNum]}");
+    //            }
+    //            machOpenNum++;
+    //        }
+    //        Console.WriteLine();
+    //    }
+    //}
 }
