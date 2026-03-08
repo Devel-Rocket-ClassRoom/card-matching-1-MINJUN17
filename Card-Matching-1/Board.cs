@@ -9,7 +9,7 @@ class Board
     public int Row { get; private set; }
     public int Column { get; private set; }
     public int BoardNumber { get; private set; }
-    public ConsoleColor[] colors;
+    public ConsoleColor[] colors { get; private set; }
     public string close { get;} = " **  ";
 
     public Board(int cardTotalNum)
@@ -38,15 +38,15 @@ class Board
                 Boards[selectCardNum] = $" {card.NumberSkin[selectCardNum],2}  ";
             }
         }
-        else if (skinType == CardSkinType.English)
+        else if (skinType == CardSkinType.Alphabet)
         {
             if (selectCardNum == card.NumberSkin.Length)
             {
-                CardOpenAll(card.EnglishSkin, card.EnglishSkin.Length);
+                CardOpenAll(card.AlphabetSkin, card.AlphabetSkin.Length);
             }
             else
             {
-                Boards[selectCardNum] = $" {card.EnglishSkin[selectCardNum],2}  ";
+                Boards[selectCardNum] = $" {card.AlphabetSkin[selectCardNum],2}  ";
             }
         }
         else if (skinType == CardSkinType.Symbol)
@@ -68,10 +68,6 @@ class Board
             Boards[i] = $" {skin[i],2}  ";
         }
     }
-    //public void OpenCard(CardDeck deck, int selectCardNum)
-    //{
-    //    Boards[selectCardNum] = $"  {deck.NumberSkin[selectCardNum],2}  ";
-    //}
     public void CloseCard(int selectCardNum)
     {
         Boards[selectCardNum] = close;
@@ -79,7 +75,7 @@ class Board
 
     public void ShowBoard(CardDeck deck)
     {
-        CreateColor();
+        CreateColor(deck);
         switch (Boards.Length)
         {
             case 8:
@@ -113,7 +109,7 @@ class Board
                 }
                 else
                 {
-                    Console.ForegroundColor = colors[int.Parse(deck.NumberSkin[k])];
+                    Console.ForegroundColor = colors[int.Parse(deck.NumberSkin[k])-1];
                     Console.Write(Boards[k++]);
                     Console.ResetColor();
                 }
@@ -121,10 +117,10 @@ class Board
             Console.WriteLine("\n");
         }
     }
-    public void CreateColor()
+    public void CreateColor(CardDeck deck)
     {
         ConsoleColor[] allColors = (ConsoleColor[])Enum.GetValues(typeof(ConsoleColor));
-        colors = new ConsoleColor[12];
+        colors = new ConsoleColor[deck.NumberSkin.Length/2];
         for(int i = 1; i <= colors.Length; i++) // 0은 검정색이라 제외
         {
             colors[i-1] = allColors[i];

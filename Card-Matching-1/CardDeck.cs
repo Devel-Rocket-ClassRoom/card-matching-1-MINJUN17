@@ -5,20 +5,21 @@ using System.Text;
 public class CardDeck
 {
     public string[] NumberSkin { get; private set; }
-    public string[] EnglishSkin {  get; private set; }
+    public string[] AlphabetSkin {  get; private set; }
     public string[] SymbolSkin { get; private set;  }
-    private int CardNumber = 1;
+    private int _cardNumber;
     Random rand = new Random();
 
     public void CreateNumberSkin(int num)
     {
+        _cardNumber = 1;
         NumberSkin = new string[num];
         for(int i = 0; i < NumberSkin.Length; i++)
         {
-            NumberSkin[i] = CardNumber++.ToString();
-            if(CardNumber > NumberSkin.Length/2)
+            NumberSkin[i] = _cardNumber++.ToString();
+            if(_cardNumber > NumberSkin.Length/2)
             {
-                CardNumber = 1;
+                _cardNumber = 1;
             }
         }
     }
@@ -33,14 +34,14 @@ public class CardDeck
             NumberSkin[randomIndex] = temp;
         }
     }
-    public void CreatEnglishSkin(int num)
+    public void CreatAlphabetSkin(int num)
     {
-        EnglishSkin = new string[num];
+        AlphabetSkin = new string[num];
 
-        for (int i = 0; i < EnglishSkin.Length; i++)
+        for (int i = 0; i < AlphabetSkin.Length; i++)
         {
             int english = int.Parse(NumberSkin[i]) + 64;
-            EnglishSkin[i] = ((char)english).ToString();
+            AlphabetSkin[i] = ((char)english).ToString();
         }
     }
     public void CreateSymbolSkin(int num)

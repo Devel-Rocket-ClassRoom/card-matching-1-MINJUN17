@@ -6,117 +6,91 @@ using System.Threading;
 class GameManager
 {
     CardDeck deck = new CardDeck();
-    Board board;
-    //private string[] board;
+    private Board _board;
     private bool _isFirstsCard = true;
     private bool IsMaching = false;
     private int _firstNum;
     private int _secondNum;
-    private int cardTotalNum;
-    private int difficultyNum;
-    private int SkinNum = 0;
-    private int rowNum = 0;
-    private int columnNum = 0;
-    private int num2_1 = 0;
-    private int num2_2 = 0;
-    private int tryCount = 0;
-    private int machCount = 0;
-    private int maxTry;
-    //private int cardNumber;
-    private bool retry = true;
+    private int _cardTotalNum;
+    private int _difficultyNum;
+    private int _skinNum = 0;
+    private int _rowNum = 0;
+    private int _columnNum = 0;
+    private int _tryCount = 0;
+    private int _machCount = 0;
+    private int _maxTry;
+    private bool _retry = true;
 
     public void Run()
     {
-        while (retry)
+        while (_retry)
         {
             Reset();
             ChoiceDifficulty();
             Console.Clear();
-            //board = new string[cardTotalNum];
-            deck.CreateNumberSkin(cardTotalNum);
+            deck.CreateNumberSkin(_cardTotalNum);
             deck.CardShuffle();
-            //BoardSetting();
-            CardSkinType skin = ChoiceSkin();
+            CardSkinType _skin = ChoiceSkin();
             Console.Clear();
-            board = new Board(cardTotalNum);
-            board.OpenCard(deck, skin, cardTotalNum);
-            Preview(difficultyNum);
-            board.CloseBoard(cardTotalNum);
+            _board = new Board(_cardTotalNum);
+            _board.OpenCard(deck, _skin, _cardTotalNum);
+            Preview(_difficultyNum);
+            _board.CloseBoard(_cardTotalNum);
             Console.Clear();
             while (true)
             {
-                //BoardShow();
-                board.ShowBoard(deck);
+                _board.ShowBoard(deck);
                 SelectNumber();
                 Console.Clear();
-                //OpenFirstNumber(num1_1, num1_2);
-                board.OpenCard(deck, skin, _firstNum);
-                board.ShowBoard(deck);
+                _board.OpenCard(deck, _skin, _firstNum);
+                _board.ShowBoard(deck);
                 SelectNumber();
-                board.OpenCard(deck, skin, _secondNum);
+                _board.OpenCard(deck, _skin, _secondNum);
                 Console.Clear();
-                //OpenSecondNumber(num1_1, num1_2, num2_1, num2_2);
                 MachingBoardChange(_firstNum, _secondNum);
                 if (!IsMaching)
                 {
-                    board.CloseCard(_firstNum);
-                    board.CloseCard(_secondNum);
+                    _board.CloseCard(_firstNum);
+                    _board.CloseCard(_secondNum);
                 }
                 IsMaching = false;
                 Thread.Sleep(2000);
                 Console.Clear();
-                if (tryCount >= maxTry)
+                if (_tryCount >= _maxTry || _machCount == _cardTotalNum / 2)
                 {
-                    Console.WriteLine($"=== 시도 횟수 초과! ===\r\n총 시도 횟수: {tryCount}");
-                    Console.Write("다시 하시겠습니까(y,n): ");
-                    string input = Console.ReadLine();
-                    if (input == "n")
-                    {
-                        retry = false;
-                    }
-                    break;
-                }
-                if (machCount == cardTotalNum / 2)
-                {
-                    Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {tryCount}");
-                    Console.Write("다시 하시겠습니까(y,n): ");
-                    string input = Console.ReadLine();
-                    if (input == "n")
-                    {
-                        retry = false;
-                    }
+                    Retry();
                     break;
                 }
             }
         }
-
+        Console.WriteLine("게임을 종료합니다.");
     }
     public CardSkinType ChoiceSkin()
     {
         while (true)
         {
-            Console.WriteLine("1. 기본 스킨");
+            Console.WriteLine("1. 숫자 스킨");
             Console.WriteLine("2. 알파벳 스킨");
             Console.WriteLine("3. 기호 스킨");
-            Console.Write("스킨을 선택하세요: ");
-            bool input = int.TryParse(Console.ReadLine(), out SkinNum);
+            Console.Write("\n스킨을 선택하세요: ");
+            bool input = int.TryParse(Console.ReadLine(), out _skinNum);
             if (!input)
             {
                 Console.WriteLine("숫자를 입력해주세요!");
             }
-            else if (SkinNum <= 0 || SkinNum > 3)
+            else if (_skinNum <= 0 || _skinNum > 3)
             {
                 Console.WriteLine("올바른 숫자가 아닙니다!");
             }
             else
             {
-                switch (SkinNum)
+                switch ((CardSkinType)_skinNum)
                 {
-                    case 2:
-                        deck.CreatEnglishSkin(cardTotalNum);
-                        return CardSkinType.English;
-                    case 3:
-                        deck.CreateSymbolSkin(cardTotalNum);
+                    case CardSkinType.Alphabet:
+                        deck.CreatAlphabetSkin(_cardTotalNum);
+                        return CardSkinType.Alphabet;
+                    case CardSkinType.Symbol:
+                        deck.CreateSymbolSkin(_cardTotalNum);
                         return CardSkinType.Symbol;
                     default:
                         return CardSkinType.Basic;
@@ -127,7 +101,7 @@ class GameManager
     public void Preview(int num)
     {
         Console.WriteLine("미리보기 !!");
-        board.ShowBoard(deck);
+        _board.ShowBoard(deck);
         if (num == 1)
         {
             Thread.Sleep(2000);
@@ -143,27 +117,33 @@ class GameManager
     }
     public void Reset()
     {
-        tryCount = 0;
-        machCount = 0;
+        _isFirstsCard = true;
+        IsMaching = false;
+        _skinNum = 0;
+        _rowNum = 0;
+        _columnNum = 0;
+        _tryCount = 0;
+        _machCount = 0;
+        _retry = true;
     }
     public void ChoiceDifficulty()
     {
-        maxTry = 40;
-        cardTotalNum = 32;
+        _maxTry = 40;
+        _cardTotalNum = 32;
         while (true)
         {
             Console.WriteLine("1. Hard(4X6): 30번 안에 찾으세요! 미리보기: 2초");
             Console.WriteLine("2. Normal(4X4): 20번 안에 찾으세요! 미리보기: 3초");
             Console.WriteLine("3. Easy(2X4): 10번 안에 찾으세요! 미리보기: 5초");
-            Console.Write("난이도를 선택하세요: ");
-            bool input = int.TryParse(Console.ReadLine(), out difficultyNum);
+            Console.Write("\n난이도를 선택하세요: ");
+            bool input = int.TryParse(Console.ReadLine(), out _difficultyNum);
             if (!input)
             {
                 Console.WriteLine("\n숫자를 입력해주세요!");
                 Thread.Sleep(1500);
                 Console.Clear();
             }
-            else if (difficultyNum <= 0 || difficultyNum > 3)
+            else if (_difficultyNum <= 0 || _difficultyNum > 3)
             {
                 Console.WriteLine("\n올바른 숫자가 아닙니다! 다시 입력해주세요!");
                 Thread.Sleep(1500);
@@ -171,9 +151,9 @@ class GameManager
             }
             else
             {
-                maxTry -= difficultyNum * 10;
-                cardTotalNum -= (difficultyNum) * 8;
-                Console.WriteLine($"{maxTry}번 안에 찾으세요!");
+                _maxTry -= _difficultyNum * 10;
+                _cardTotalNum -= (_difficultyNum) * 8;
+                Console.WriteLine($"{_maxTry}번 안에 찾으세요!");
                 Console.Clear();
                 break;
             }
@@ -181,11 +161,11 @@ class GameManager
     }
     public void MachingBoardChange(int firstNum, int secondNum)
     {
-        board.ShowBoard(deck);
+        _board.ShowBoard(deck);
         if (deck.NumberSkin[firstNum] == deck.NumberSkin[secondNum])
         {
             IsMaching = true;
-            machCount++;
+            _machCount++;
             Console.WriteLine("\n짝을 찾았습니다!");
         }
         else
@@ -201,7 +181,7 @@ class GameManager
         bool input2 = false;
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {tryCount}/{maxTry} | 찾은 쌍: {machCount}/{board.Boards.Length / 2}");
+            Console.WriteLine($"\n시도 횟수: {_tryCount}/{_maxTry} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
             if (_isFirstsCard)
             {
                 Console.Write($"\n첫 번째 카드를 선택하세요 (행 열):");
@@ -212,19 +192,26 @@ class GameManager
             }
             string input = Console.ReadLine();
             string[] number = input.Split(' ');
-            input1 = int.TryParse(number[0], out rowNum);
-            input2 = int.TryParse(number[1], out columnNum);
+            if (number.Length < 2)
+            {
+                Console.Clear();
+                _board.ShowBoard(deck);
+                Console.WriteLine("숫자 두개를 띄어쓰기로 구분해서 입력해주세요!");
+                continue;
+            }
+            input1 = int.TryParse(number[0], out _rowNum);
+            input2 = int.TryParse(number[1], out _columnNum);
             if (!input1 || !input2)
             {
                 Console.Clear();
-                board.ShowBoard(deck);
+                _board.ShowBoard(deck);
                 Console.WriteLine("숫자를 입력해주세요!");
                 continue;
             }
-            else if (rowNum > board.Row || columnNum > board.Column || rowNum <= 0 || columnNum <= 0)
+            else if (_rowNum > _board.Row || _columnNum > _board.Column || _rowNum <= 0 || _columnNum <= 0)
             {
                 Console.Clear();
-                board.ShowBoard(deck);
+                _board.ShowBoard(deck);
                 Console.WriteLine("올바른 숫자가 아닙니다!");
                 continue;
             }
@@ -232,30 +219,57 @@ class GameManager
             {
                 if (_isFirstsCard)
                 {
-                    _firstNum = ((rowNum - 1) * 4) + columnNum - 1;
-                    if (board.Boards[_firstNum] != board.close)
+                    _firstNum = ((_rowNum - 1) * _board.Column) + _columnNum - 1;
+                    if (_board.Boards[_firstNum] != _board.close)
                     {
                         Console.Clear();
-                        board.ShowBoard(deck);
+                        _board.ShowBoard(deck);
                         Console.WriteLine("새로운 숫자를 입력해주세요!");
                         continue;
                     }
                 }
                 else
                 {
-                    _secondNum = ((rowNum - 1) * 4) + columnNum - 1;
-                    if (board.Boards[_secondNum] != board.close)
+                    _secondNum = ((_rowNum - 1) * _board.Column) + _columnNum - 1;
+                    if (_board.Boards[_secondNum] != _board.close)
                     {
                         Console.Clear();
-                        board.ShowBoard(deck);
+                        _board.ShowBoard(deck);
                         Console.WriteLine("새로운 숫자를 입력해주세요!");
                         continue;
                     }
                 }
-                if (!_isFirstsCard) { tryCount++; }
+                if (!_isFirstsCard) { _tryCount++; }
                 _isFirstsCard = !_isFirstsCard;
                 break;
             }
+        }
+    }
+    public void Retry()
+    {
+        if (_tryCount >= _maxTry)
+        {
+            Console.WriteLine($"=== 시도 횟수 초과! ===\r\n총 시도 횟수: {_tryCount}");
+        }
+        else
+        {
+            Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {_tryCount}");
+        }
+        while (true)
+        {
+            Console.Write("\n다시 하시겠습니까(y,n): ");
+            string input = Console.ReadLine().ToUpper();
+            if (input != "Y" && input != "N")
+            {
+                Console.WriteLine("\n다시 입력해 주세요!!");
+                continue;
+            }
+            if (input == "N")
+            {
+                _retry = false;
+            }
+            Console.Clear();
+            break;
         }
     }
 }

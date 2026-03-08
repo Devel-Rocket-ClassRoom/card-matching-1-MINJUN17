@@ -4,7 +4,7 @@ using System.Text;
 
 public enum CardSkinType
 {
-    Basic,
-    English,
+    Basic = 1,
+    Alphabet,
     Symbol
 }
