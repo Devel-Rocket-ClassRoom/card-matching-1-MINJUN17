@@ -7,26 +7,34 @@ class GameManager
 {
     CardDeck deck = new CardDeck();
     private Board _board;
-    private bool _isFirstsCard = true;
-    private bool IsMaching = false;
+    private bool _isFirstsCard;
+    private bool IsMaching;
     private int _firstNum;
     private int _secondNum;
     private int _cardTotalNum;
     private int _difficultyNum;
-    private int _skinNum = 0;
-    private int _rowNum = 0;
-    private int _columnNum = 0;
-    private int _tryCount = 0;
-    private int _machCount = 0;
+    private int _skinNum;
+    private int _rowNum;
+    private int _columnNum;
+    private int _tryCount;
+    private int _machCount;
+    private int _maxTime;
+    private int _currentTime;
     private int _maxTry;
+    private DateTime _startTime;
     private bool _retry = true;
+    private bool _gameSet = false;
+    private int _wrongAnswerCount;
+    private string _inputNumber;
+    private int _timeLine;
 
     public void Run()
     {
         while (_retry)
         {
             Reset();
-            ChoiceDifficulty();
+            Mode mode = ChoiceMode();
+            DifficultyLevel level = ChoiceDifficulty(mode);
             Console.Clear();
             deck.CreateNumberSkin(_cardTotalNum);
             deck.CardShuffle();
@@ -34,36 +42,72 @@ class GameManager
             Console.Clear();
             _board = new Board(_cardTotalNum);
             _board.OpenCard(deck, _skin, _cardTotalNum);
-            Preview(_difficultyNum);
+            Preview(level);
             _board.CloseBoard(_cardTotalNum);
             Console.Clear();
-            while (true)
+            _startTime = DateTime.Now;
+            while (!_gameSet)
             {
+                _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds;
                 _board.ShowBoard(deck);
-                SelectNumber();
+                PrintProgress(mode);
+                SelectNumber(mode);
+                GameOverCheck(mode);
                 Console.Clear();
                 _board.OpenCard(deck, _skin, _firstNum);
                 _board.ShowBoard(deck);
-                SelectNumber();
+                PrintProgress(mode);
+                SelectNumber(mode);
                 _board.OpenCard(deck, _skin, _secondNum);
                 Console.Clear();
                 MachingBoardChange(_firstNum, _secondNum);
                 if (!IsMaching)
                 {
+                    _wrongAnswerCount++;
                     _board.CloseCard(_firstNum);
                     _board.CloseCard(_secondNum);
                 }
                 IsMaching = false;
-                Thread.Sleep(2000);
+                Thread.Sleep(1000);
                 Console.Clear();
-                if (_tryCount >= _maxTry || _machCount == _cardTotalNum / 2)
-                {
-                    Retry();
-                    break;
-                }
+                GameOverCheck(mode);
             }
         }
         Console.WriteLine("게임을 종료합니다.");
+    }
+    public Mode ChoiceMode()
+    {
+        Console.WriteLine("1. 클래식: 횟수 제한");
+        Console.WriteLine("2. 타임어택: 시간 제한(횟수 무제한)");
+        Console.WriteLine("3. 서바이벌: 연속 세번 틀릴시 게임 오버");
+        Console.Write("\n모드를 선택하세요: ");
+        bool input = int.TryParse(Console.ReadLine(), out _skinNum);
+        while (true)
+        {
+            if (!input)
+            {
+                Console.WriteLine("숫자를 입력해주세요!");
+            }
+            else if (_skinNum <= 0 || _skinNum > 3)
+            {
+                Console.WriteLine("올바른 숫자가 아닙니다!");
+            }
+            else
+            {
+                switch ((Mode)_skinNum)
+                {
+                    case Mode.TimeAttack:
+                        Console.Clear();
+                        return Mode.TimeAttack;
+                    case Mode.Survivor:
+                        Console.Clear();
+                        return Mode.Survivor;
+                    default:
+                        Console.Clear();
+                        return Mode.Classic;
+                }
+            }
+        }
     }
     public CardSkinType ChoiceSkin()
     {
@@ -98,21 +142,41 @@ class GameManager
             }
         }
     }
-    public void Preview(int num)
+    public void Preview(DifficultyLevel level)
     {
-        Console.WriteLine("미리보기 !!");
-        _board.ShowBoard(deck);
-        if (num == 1)
+        int seconds;
+        if (level == DifficultyLevel.Hard)
         {
-            Thread.Sleep(2000);
+            seconds = 2;
+            for (int i = seconds; i > 0; i--)
+            {
+                Console.WriteLine($"미리보기 시간: {i}초");
+                _board.ShowBoard(deck);
+                Thread.Sleep(1000);
+                Console.Clear();
+            }
         }
-        else if (num == 2)
+        else if (level == DifficultyLevel.Normal)
         {
-            Thread.Sleep(3000);
+            seconds = 3;
+            for (int i = seconds; i > 0; i--)
+            {
+                Console.WriteLine($"미리보기 시간: {i}초");
+                _board.ShowBoard(deck);
+                Thread.Sleep(1000);
+                Console.Clear();
+            }
         }
-        else
+        else if (level == DifficultyLevel.Easy)
         {
-            Thread.Sleep(5000);
+            seconds = 5;
+            for (int i = seconds; i > 0; i--)
+            {
+                Console.WriteLine($"미리보기 시간: {i}초");
+                _board.ShowBoard(deck);
+                Thread.Sleep(1000);
+                Console.Clear();
+            }
         }
     }
     public void Reset()
@@ -125,16 +189,32 @@ class GameManager
         _tryCount = 0;
         _machCount = 0;
         _retry = true;
+        _currentTime = 0;
+        _gameSet = false;
+        _wrongAnswerCount = 0;
     }
-    public void ChoiceDifficulty()
+    public DifficultyLevel ChoiceDifficulty(Mode mode)
     {
-        _maxTry = 40;
-        _cardTotalNum = 32;
         while (true)
         {
-            Console.WriteLine("1. Hard(4X6): 30번 안에 찾으세요! 미리보기: 2초");
-            Console.WriteLine("2. Normal(4X4): 20번 안에 찾으세요! 미리보기: 3초");
-            Console.WriteLine("3. Easy(2X4): 10번 안에 찾으세요! 미리보기: 5초");
+            if (mode == Mode.Classic)
+            {
+                Console.WriteLine("1. Hard(4X6): 30번 안에 찾으세요! 미리보기: 2초");
+                Console.WriteLine("2. Normal(4X4): 20번 안에 찾으세요! 미리보기: 3초");
+                Console.WriteLine("3. Easy(2X4): 10번 안에 찾으세요! 미리보기: 5초");
+            }
+            else if(mode == Mode.TimeAttack)
+            {
+                Console.WriteLine("1. Hard(4X6): 120초 안에 찾으세요! 미리보기: 2초");
+                Console.WriteLine("2. Normal(4X4): 90초 안에 찾으세요! 미리보기: 3초");
+                Console.WriteLine("3. Easy(2X4): 60초 안에 찾으세요! 미리보기: 5초");
+            }
+            else if(mode == Mode.Survivor)
+            {
+                Console.WriteLine("1. Hard(4X6): 3번 연속 틀리면 게임 오버! 미리보기: 2초");
+                Console.WriteLine("2. Normal(4X4): 3번 연속 틀리면 게임 오버! 미리보기: 3초");
+                Console.WriteLine("3. Easy(2X4): 3번 연속 틀리면 게임 오버! 미리보기: 5초");
+            }
             Console.Write("\n난이도를 선택하세요: ");
             bool input = int.TryParse(Console.ReadLine(), out _difficultyNum);
             if (!input)
@@ -151,13 +231,33 @@ class GameManager
             }
             else
             {
-                _maxTry -= _difficultyNum * 10;
-                _cardTotalNum -= (_difficultyNum) * 8;
-                Console.WriteLine($"{_maxTry}번 안에 찾으세요!");
-                Console.Clear();
-                break;
+                switch ((DifficultyLevel)_difficultyNum)
+                {
+                    case DifficultyLevel.Hard:
+                        _maxTry = 30;
+                        _maxTime = 120;
+                        _cardTotalNum = 24;
+                        return DifficultyLevel.Hard;
+                    case DifficultyLevel.Normal:
+                        _maxTry = 20;
+                        _maxTime = 90;
+                        _cardTotalNum = 16;
+                        return DifficultyLevel.Normal;
+                    case DifficultyLevel.Easy:
+                        _maxTry = 10;
+                        _maxTime = 60;
+                        _cardTotalNum = 8;
+                        return DifficultyLevel.Easy;
+                    default:
+                        _maxTry = 30;
+                        _maxTime = 120;
+                        _cardTotalNum = 24;
+                        return DifficultyLevel.Hard;
+                }
             }
         }
+
+
     }
     public void MachingBoardChange(int firstNum, int secondNum)
     {
@@ -166,6 +266,7 @@ class GameManager
         {
             IsMaching = true;
             _machCount++;
+            _wrongAnswerCount = 0;
             Console.WriteLine("\n짝을 찾았습니다!");
         }
         else
@@ -173,15 +274,29 @@ class GameManager
             Console.WriteLine("\n짝이 맞지 않습니다!");
         }
     }
-
-
-    public void SelectNumber()
+    
+    public void PrintProgress(Mode mode)
+    {
+        if(mode == Mode.Classic)
+        {
+            Console.WriteLine($"\n시도 횟수: {_tryCount}/{_maxTry} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
+        }
+        else if(mode == Mode.TimeAttack)
+        {
+            _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds;
+            _timeLine = Console.CursorTop;   // 시간 출력 위치 기억
+        }
+        else if(mode == Mode.Survivor)
+        {
+            Console.WriteLine($"\n현재 연속 오답: {_wrongAnswerCount} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
+        }
+    }
+    public void SelectNumber(Mode mode)
     {
         bool input1 = false;
         bool input2 = false;
         while (true)
         {
-            Console.WriteLine($"\n시도 횟수: {_tryCount}/{_maxTry} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
             if (_isFirstsCard)
             {
                 Console.Write($"\n첫 번째 카드를 선택하세요 (행 열):");
@@ -190,7 +305,7 @@ class GameManager
             {
                 Console.Write($"\n두 번째 카드를 선택하세요 (행 열):");
             }
-            string input = Console.ReadLine();
+            string input = Input(mode);
             string[] number = input.Split(' ');
             if (number.Length < 2)
             {
@@ -245,13 +360,91 @@ class GameManager
             }
         }
     }
-    public void Retry()
+    public void GameOverCheck(Mode mode)
     {
-        if (_tryCount >= _maxTry)
+        switch (mode)
+        {
+            case Mode.Classic:
+                if (_tryCount >= _maxTry || _machCount == _cardTotalNum / 2) Retry(mode);
+                break;
+            case Mode.TimeAttack:
+                if (_currentTime > _maxTime || _machCount == _cardTotalNum / 2) Retry(mode);
+                break;
+            case Mode.Survivor:
+                if (_wrongAnswerCount >= 3 || _machCount == _cardTotalNum / 2) Retry(mode);
+                break;
+        }
+    }
+    public string Input(Mode mode) // 타임어택 실시간 반영을 위해 Console.ReadLine() 대신 사용
+    {
+        _inputNumber = string.Empty;
+        while (true)
+        {
+            if(_currentTime > _maxTime) // 시간 지나면 게임오버
+            {
+                GameOverCheck(mode);
+                return string.Empty;
+            }
+            _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds; // 실시간 시간 계산식
+            if(mode == Mode.TimeAttack)
+            {
+                int cursorHorizon = Console.CursorLeft; 
+                int cursorVertical = Console.CursorTop; // 밑줄에서 커서 위치가 이동해서 입력시 불편하기 때문에 커서위치 기억
+                Console.SetCursorPosition(0, _timeLine);// 시간출력되는 위치로 이동
+                Console.Write($"경과 시간: {_currentTime}/{_maxTime} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}   "); // 시간 출력
+
+                Console.SetCursorPosition(cursorHorizon, cursorVertical); // 기억한 커서로 이동
+            }
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    return _inputNumber;
+                }
+                else if (key.Key == ConsoleKey.Backspace)
+                {
+                    if(_inputNumber.Length > 0)
+                    {
+                        _inputNumber = _inputNumber.Substring(0, _inputNumber.Length - 1);
+                        Console.Write("\b \b");
+                    }
+                }
+                else
+                {
+                    _inputNumber += key.KeyChar;
+                    Console.Write(key.KeyChar);
+                }
+            }
+
+            Thread.Sleep(10); // 안쓰면 cpu 과부화
+        }
+    }
+    public void Retry(Mode mode)
+    {
+        Console.Clear();
+        _gameSet = true;
+        if (mode == Mode.Classic && _tryCount >= _maxTry)
         {
             Console.WriteLine($"=== 시도 횟수 초과! ===\r\n총 시도 횟수: {_tryCount}");
         }
-        else
+        else if(mode == Mode.Classic && _tryCount < _maxTry)
+        {
+            Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {_tryCount}");
+        }
+        else if(mode == Mode.TimeAttack && _currentTime > _maxTime)
+        {
+            Console.WriteLine($"=== 제한 시간 초과! ===\r\n찾은 쌍: {_machCount}/{_cardTotalNum / 2}");
+        }
+        else if(mode == Mode.TimeAttack && _currentTime <= _maxTime)
+        {
+            Console.WriteLine($"=== 게임 클리어! ===\r\n소요 시간: {_currentTime}/{_maxTime}");
+        }
+        else if(mode == Mode.Survivor && _wrongAnswerCount >= 3)
+        {
+            Console.WriteLine($"=== 3연속 오답 게임 오버! ===\r\n찾은 쌍: {_machCount}/{_cardTotalNum / 2}");
+        }
+        else if(mode == Mode.Survivor && _wrongAnswerCount < 3)
         {
             Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {_tryCount}");
         }
