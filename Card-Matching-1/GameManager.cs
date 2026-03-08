@@ -52,7 +52,6 @@ class GameManager
                 _board.ShowBoard(deck);
                 PrintProgress(mode);
                 SelectNumber(mode);
-                GameOverCheck(mode);
                 Console.Clear();
                 _board.OpenCard(deck, _skin, _firstNum);
                 _board.ShowBoard(deck);
