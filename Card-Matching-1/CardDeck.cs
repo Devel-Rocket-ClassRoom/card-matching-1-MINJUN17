@@ -7,11 +7,10 @@ public class CardDeck
     public string[] NumberSkin { get; private set; }
     public string[] EnglishSkin {  get; private set; }
     public string[] SymbolSkin { get; private set;  }
-    public CardSkinType Skin { get; private set; }
     private int CardNumber = 1;
     Random rand = new Random();
 
-    public void CreateDeck(int num)
+    public void CreateNumberSkin(int num)
     {
         NumberSkin = new string[num];
         for(int i = 0; i < NumberSkin.Length; i++)
