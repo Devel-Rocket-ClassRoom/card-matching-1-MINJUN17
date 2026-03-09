@@ -10,7 +10,7 @@ class Board
     public int Column { get; private set; }
     public int BoardNumber { get; private set; }
     public ConsoleColor[] colors { get; private set; }
-    public string close { get;} = " **  ";
+    public string close { get; } = " **  ";
 
     public Board(int cardTotalNum)
     {
@@ -24,7 +24,6 @@ class Board
             Boards[i] = close;
         }
     }
-    //미리보기 용
     public void OpenCard(CardDeck card, CardSkinType skinType, int selectCardNum)
     {
         if (skinType == CardSkinType.Basic)
@@ -35,7 +34,7 @@ class Board
             }
             else
             {
-                Boards[selectCardNum] = $" {card.NumberSkin[selectCardNum],2}  ";
+                Boards[selectCardNum] = $" [{card.NumberSkin[selectCardNum],2}]  ";
             }
         }
         else if (skinType == CardSkinType.Alphabet)
@@ -46,7 +45,7 @@ class Board
             }
             else
             {
-                Boards[selectCardNum] = $" {card.AlphabetSkin[selectCardNum],2}  ";
+                Boards[selectCardNum] = $"[{card.AlphabetSkin[selectCardNum],2}] ";
             }
         }
         else if (skinType == CardSkinType.Symbol)
@@ -57,8 +56,26 @@ class Board
             }
             else
             {
-                Boards[selectCardNum] = $" {card.SymbolSkin[selectCardNum],2}  ";
+                Boards[selectCardNum] = $"[{card.SymbolSkin[selectCardNum],2}] ";
             }
+        }
+    }
+    public void MatchingCard(CardDeck card, CardSkinType skinType, int selectCardNum1, int selectCardNum2)
+    {
+        if (skinType == CardSkinType.Basic)
+        {
+            Boards[selectCardNum1] = $" {card.NumberSkin[selectCardNum1],2}  ";
+            Boards[selectCardNum2] = $" {card.NumberSkin[selectCardNum2],2}  ";
+        }
+        else if (skinType == CardSkinType.Alphabet)
+        {
+            Boards[selectCardNum1] = $" {card.AlphabetSkin[selectCardNum1],2}  ";
+            Boards[selectCardNum2] = $" {card.AlphabetSkin[selectCardNum2],2}  ";
+        }
+        else if (skinType == CardSkinType.Symbol)
+        {
+            Boards[selectCardNum1] = $" {card.SymbolSkin[selectCardNum1],2}  ";
+            Boards[selectCardNum2] = $" {card.SymbolSkin[selectCardNum2],2}  ";
         }
     }
     public void CardOpenAll(string[] skin, int selectCardNum)
@@ -109,7 +126,7 @@ class Board
                 }
                 else
                 {
-                    Console.ForegroundColor = colors[int.Parse(deck.NumberSkin[k])-1];
+                    Console.ForegroundColor = colors[int.Parse(deck.NumberSkin[k]) - 1];
                     Console.Write(Boards[k++]);
                     Console.ResetColor();
                 }
@@ -120,11 +137,11 @@ class Board
     public void CreateColor(CardDeck deck)
     {
         ConsoleColor[] allColors = (ConsoleColor[])Enum.GetValues(typeof(ConsoleColor));
-        colors = new ConsoleColor[deck.NumberSkin.Length/2];
-        for(int i = 1; i <= colors.Length; i++) // 0은 검정색이라 제외
+        colors = new ConsoleColor[deck.NumberSkin.Length / 2];
+        for (int i = 1; i <= colors.Length; i++) // 0은 검정색이라 제외
         {
-            colors[i-1] = allColors[i];
+            colors[i - 1] = allColors[i];
         }
     }
-    
+
 }

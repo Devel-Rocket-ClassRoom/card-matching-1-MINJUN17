@@ -66,6 +66,10 @@ class GameManager
                     _board.CloseCard(_firstNum);
                     _board.CloseCard(_secondNum);
                 }
+                else
+                {
+                    _board.MatchingCard(deck, _skin, _firstNum, _secondNum);
+                }
                 IsMaching = false;
                 Thread.Sleep(1000);
                 Console.Clear();
