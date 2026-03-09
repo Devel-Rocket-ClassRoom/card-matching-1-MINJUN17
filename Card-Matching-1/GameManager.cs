@@ -51,11 +51,13 @@ class GameManager
                 _board.ShowBoard(deck);
                 PrintProgress(mode);
                 SelectNumber(mode);
+                if (_gameSet) break;
                 Console.Clear();
                 _board.OpenCard(deck, _skin, _firstNum);
                 _board.ShowBoard(deck);
                 PrintProgress(mode);
                 SelectNumber(mode);
+                if (_gameSet) break;
                 _board.OpenCard(deck, _skin, _secondNum);
                 Console.Clear();
                 MachingBoardChange(_firstNum, _secondNum);
@@ -205,13 +207,13 @@ class GameManager
                 Console.WriteLine("2. Normal(4X4): 20번 안에 찾으세요! 미리보기: 3초");
                 Console.WriteLine("3. Easy(2X4): 10번 안에 찾으세요! 미리보기: 5초");
             }
-            else if(mode == Mode.TimeAttack)
+            else if (mode == Mode.TimeAttack)
             {
                 Console.WriteLine("1. Hard(4X6): 120초 안에 찾으세요! 미리보기: 2초");
                 Console.WriteLine("2. Normal(4X4): 90초 안에 찾으세요! 미리보기: 3초");
                 Console.WriteLine("3. Easy(2X4): 60초 안에 찾으세요! 미리보기: 5초");
             }
-            else if(mode == Mode.Survivor)
+            else if (mode == Mode.Survivor)
             {
                 Console.WriteLine("1. Hard(4X6): 3번 연속 틀리면 게임 오버! 미리보기: 2초");
                 Console.WriteLine("2. Normal(4X4): 3번 연속 틀리면 게임 오버! 미리보기: 3초");
@@ -276,19 +278,19 @@ class GameManager
             Console.WriteLine("\n짝이 맞지 않습니다!");
         }
     }
-    
+
     public void PrintProgress(Mode mode)
     {
-        if(mode == Mode.Classic)
+        if (mode == Mode.Classic)
         {
             Console.WriteLine($"\n시도 횟수: {_tryCount}/{_maxTry} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
         }
-        else if(mode == Mode.TimeAttack)
+        else if (mode == Mode.TimeAttack)
         {
             _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds;
             _timeLine = Console.CursorTop;   // 시간 출력 위치 기억
         }
-        else if(mode == Mode.Survivor)
+        else if (mode == Mode.Survivor)
         {
             Console.WriteLine($"\n현재 연속 오답: {_wrongAnswerCount} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}");
         }
@@ -308,6 +310,7 @@ class GameManager
                 Console.Write($"\n두 번째 카드를 선택하세요 (행 열):");
             }
             string input = Input(mode);
+            if (_gameSet) return;
             string[] number = input.Split(' ');
             if (number.Length < 2)
             {
@@ -383,15 +386,15 @@ class GameManager
         _inputNumber = string.Empty;
         while (true)
         {
-            if(_currentTime > _maxTime) // 시간 지나면 게임오버
+            if (_currentTime > _maxTime) // 시간 지나면 게임오버
             {
                 GameOverCheck(mode);
                 return "";
             }
             _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds; // 실시간 시간 계산식
-            if(mode == Mode.TimeAttack)
+            if (mode == Mode.TimeAttack)
             {
-                int cursorHorizon = Console.CursorLeft; 
+                int cursorHorizon = Console.CursorLeft;
                 int cursorVertical = Console.CursorTop; // 밑줄에서 커서 위치가 이동해서 입력시 불편하기 때문에 커서위치 기억
                 Console.SetCursorPosition(0, _timeLine);// 시간출력되는 위치로 이동
                 Console.Write($"경과 시간: {_currentTime}/{_maxTime} | 찾은 쌍: {_machCount}/{_board.Boards.Length / 2}   "); // 시간 출력
@@ -407,7 +410,7 @@ class GameManager
                 }
                 else if (key.Key == ConsoleKey.Backspace)
                 {
-                    if(_inputNumber.Length > 0)
+                    if (_inputNumber.Length > 0)
                     {
                         _inputNumber = _inputNumber.Substring(0, _inputNumber.Length - 1);
                         Console.Write("\b \b");
@@ -431,23 +434,23 @@ class GameManager
         {
             Console.WriteLine($"=== 시도 횟수 초과! ===\r\n총 시도 횟수: {_tryCount}");
         }
-        else if(mode == Mode.Classic && _tryCount < _maxTry)
+        else if (mode == Mode.Classic && _tryCount < _maxTry)
         {
             Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {_tryCount}");
         }
-        else if(mode == Mode.TimeAttack && _currentTime > _maxTime)
+        else if (mode == Mode.TimeAttack && _currentTime > _maxTime)
         {
             Console.WriteLine($"=== 제한 시간 초과! ===\r\n찾은 쌍: {_machCount}/{_cardTotalNum / 2}");
         }
-        else if(mode == Mode.TimeAttack && _currentTime <= _maxTime)
+        else if (mode == Mode.TimeAttack && _currentTime <= _maxTime)
         {
             Console.WriteLine($"=== 게임 클리어! ===\r\n소요 시간: {_currentTime}/{_maxTime}");
         }
-        else if(mode == Mode.Survivor && _wrongAnswerCount >= 3)
+        else if (mode == Mode.Survivor && _wrongAnswerCount >= 3)
         {
             Console.WriteLine($"=== 3연속 오답 게임 오버! ===\r\n찾은 쌍: {_machCount}/{_cardTotalNum / 2}");
         }
-        else if(mode == Mode.Survivor && _wrongAnswerCount < 3)
+        else if (mode == Mode.Survivor && _wrongAnswerCount < 3)
         {
             Console.WriteLine($"=== 게임 클리어! ===\r\n총 시도 횟수: {_tryCount}");
         }
