@@ -370,6 +370,7 @@ class GameManager
                 if (_tryCount >= _maxTry || _machCount == _cardTotalNum / 2) Retry(mode);
                 break;
             case Mode.TimeAttack:
+                _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds;
                 if (_currentTime > _maxTime || _machCount == _cardTotalNum / 2) Retry(mode);
                 break;
             case Mode.Survivor:
@@ -385,7 +386,7 @@ class GameManager
             if(_currentTime > _maxTime) // 시간 지나면 게임오버
             {
                 GameOverCheck(mode);
-                return string.Empty;
+                return "";
             }
             _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds; // 실시간 시간 계산식
             if(mode == Mode.TimeAttack)
