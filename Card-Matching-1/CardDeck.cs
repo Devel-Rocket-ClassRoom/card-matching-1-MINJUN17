@@ -8,7 +8,6 @@ public class CardDeck
     public string[] AlphabetSkin {  get; private set; }
     public string[] SymbolSkin { get; private set;  }
     private int _cardNumber;
-    Random rand = new Random();
 
     public void CreateNumberSkin(int num)
     {
@@ -26,7 +25,8 @@ public class CardDeck
     
     public void CardShuffle()
     {
-        for(int i = 0; i < NumberSkin.Length; i++)
+        Random rand = new Random();
+        for (int i = 0; i < NumberSkin.Length; i++)
         {
             int randomIndex = rand.Next(NumberSkin.Length);
             string temp = NumberSkin[i];
