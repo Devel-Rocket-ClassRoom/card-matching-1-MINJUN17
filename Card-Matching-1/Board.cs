@@ -34,7 +34,7 @@ class Board
             }
             else
             {
-                Boards[selectCardNum] = $" [{card.NumberSkin[selectCardNum],2}]  ";
+                Boards[selectCardNum] = $"[{card.NumberSkin[selectCardNum],2}] ";
             }
         }
         else if (skinType == CardSkinType.Alphabet)
