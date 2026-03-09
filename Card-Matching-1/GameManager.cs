@@ -48,7 +48,6 @@ class GameManager
             _startTime = DateTime.Now;
             while (!_gameSet)
             {
-                _currentTime = (int)(DateTime.Now - _startTime).TotalSeconds;
                 _board.ShowBoard(deck);
                 PrintProgress(mode);
                 SelectNumber(mode);
